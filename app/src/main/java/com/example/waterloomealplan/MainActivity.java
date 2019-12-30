@@ -1,17 +1,25 @@
 package com.example.waterloomealplan;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,12 +28,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
 
-
+    final Calendar myCalendar = Calendar.getInstance();
     public void writeFile(String contents, String name) throws IOException {
         String filename = name;
         String fileContents = contents;
@@ -56,8 +67,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static int totalCount;
-    public static int totalDays;
-    public static boolean reset = false;
+    public static String moneyLeft = "";
+    public static String totalDays;
+    public static boolean reset = true;
     public int timesRunDay() {
 
 
@@ -105,7 +117,11 @@ public class MainActivity extends AppCompatActivity {
         return Double.parseDouble(avg.substring(1, avg.length()));
     }
 
+    public static String totalAmountFile = "totalMoney";
+    public static String myFile = "myFile";
+    public static String daysLeftFile = "daysLeft";
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,20 +131,25 @@ public class MainActivity extends AppCompatActivity {
         TextView right = (TextView) (findViewById(R.id.textViewRight));
         TextView left = (TextView) (findViewById(R.id.textViewLeft));
         Button cb = (Button) (findViewById(R.id.checkbox));
-        String totalAmountFile = "totalMoney";
-        String myFile = "myFile";
-        String daysLeftFile = "daysLeft";
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
 
 
 
-        Toast.makeText(getApplicationContext(),timesRunEver() + "", Toast.LENGTH_SHORT).show();
+
+
+
         if (timesRunEver() == 1 || reset) { //If its the first time even opened, or reset mode is enabled
-
+            new Intent(MainActivity.this, EnterScreen.class); // promts user for amount of days left
             try {
-                totalDays = 67; // initial days left
+                //Intent i = new Intent(MainActivity.this, EnterScreen.class);
+
+                totalDays = readFile(daysLeftFile); // initial days left
+
                 writeFile(totalDays + "", daysLeftFile);
-                writeFile("$1,702.26", totalAmountFile); // initial balance
-                writeFile("$12.56", myFile); // initial average
+
+                writeFile("$123.21", totalAmountFile); // initial balance, replace with new algorithm from internet
+                //double initialAvg = removeCommaAndDollarSign(readFile(MainActivity.totalAmountFile))/Double.parseDouble(totalDays);
+                writeFile(ButtonHandler.moneyFormat(10), myFile); // initial average, replace with new algorithm from internet
                 Toast.makeText(getApplicationContext(),readFile(totalAmountFile) + "", Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
                 e.printStackTrace();
